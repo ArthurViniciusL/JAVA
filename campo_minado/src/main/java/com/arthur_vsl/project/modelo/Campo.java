@@ -1,7 +1,6 @@
 package com.arthur_vsl.project.modelo;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class Campo {
 	
@@ -20,6 +19,14 @@ public class Campo {
 		this.coluna = coluna;
 	}
 	
+	public int getLinha() {
+		return linha;
+	}
+
+	public int getColuna() {
+		return coluna;
+	}
+
 	public boolean addVizinhos(Campo p_vizinho) {
 		boolean status = false;
 		
@@ -36,9 +43,100 @@ public class Campo {
 			status = true;			
 		}
 		
-		return status;
+		return status;	
+	}
+	
+	public boolean abraCampo() {
+		if (isFechado() && !marcado) {
+			aberto = true;
 		
+			if (minado) {
+				throw new ExplosaoException();
+			}
 		
+			if (vizinhancaSegura()) {
+				vizinhos.forEach(v -> v.abraCampo());
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	public void alterneMarcacao() {
+		if (isFechado()) {
+			marcado = !marcado;
+		}		
+	}
+	
+	public boolean vizinhancaSegura() {
+		// O resultado dessa expressao (true or false) determina a seguranca da vizinhaca
+		return vizinhos.stream().noneMatch(v -> v.minado);
+	}
+	
+	//simplicado	
+	public void minarCampo() {
+		minado = true;
+		
+	}
+	
+	public boolean isMinado() {
+		return minado;
+	}
+	
+	public boolean isMarcado() {
+		return marcado;
+	}
+	
+	public boolean isAberto() {
+		return aberto;
+	}
+	
+	public boolean isFechado() {
+		return !aberto;
+	}
+	
+	public boolean objetivoAlcancado() {
+		boolean desvendado 	= !minado && aberto;
+		boolean protegido 	= minado && marcado;
+		
+		return desvendado || protegido;
+	}
+	
+	public long minasNaVizinhanca() {
+		return vizinhos
+				.stream()
+				.filter(v -> v.minado)
+				.count();
+	}
+	
+	public void reiniciar() {
+		this.aberto 	= false;
+		this.minado 	= false;
+		this.marcado 	= false;
+	}
+
+	@Override
+	public String toString() {
+		
+		String marcacao;
+		
+		if(marcado) {
+			marcacao = "x";
+		} 
+		
+		else if(aberto && minado) {
+			marcacao = "x";
+		} else if(aberto && (minasNaVizinhanca() > 0) ) {
+			marcacao =  Long.toString(minasNaVizinhanca());
+		} else if(aberto) {
+			marcacao = "";
+		}
+		
+		else {
+			marcacao = "?";
+		}
+		
+		return marcacao;
 	}
 	
 }
